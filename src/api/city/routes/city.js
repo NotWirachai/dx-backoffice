@@ -5,23 +5,27 @@
  */
 
 const { createCoreRouter } = require("@strapi/strapi").factories;
+const defaultRouter = createCoreRouter("api::city.city");
 
-module.exports = createCoreRouter("api::city.city", {
-  // only: ["deleteMany"],
-  config: {
-    find: {
-      auth: false,
-      policies: [],
-      middlewares: [],
+const customRouter = (innerRouter, extraRoutes = []) => {
+  let routes;
+  return {
+    get prefix() {
+      return innerRouter.prefix;
     },
-    findOne: {},
-    create: {},
-    update: {},
-    delete: {},
-    deleteMany: {
-      path: "/cities",
-      method: "DELETE",
-      handler: "city.deleteMany",
+    get routes() {
+      if (!routes) routes = innerRouter.routes.concat(extraRoutes);
+      return routes;
     },
+  };
+};
+
+const myExtraRoutes = [
+  {
+    method: "DELETE",
+    path: "/cities",
+    handler: "api::city.city.deleteMany",
   },
-});
+];
+
+module.exports = customRouter(defaultRouter, myExtraRoutes);
